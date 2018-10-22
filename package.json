@@ -1,0 +1,35 @@
+{
+  "name": "es6-connect4",
+  "version": "1.0.0",
+  "description": "Connect Four written in ES6",
+  "main": "index.js",
+  "repository": "https://github.com/as3richa/es6-connect4",
+  "author": "Adam Richardson",
+  "license": "MIT",
+  "dependencies": {
+    "@babel/core": "^7.0.0-beta.51",
+    "@babel/plugin-proposal-class-properties": "^7.0.0-beta.51",
+    "@babel/preset-env": "^7.0.0-beta.51",
+    "@babel/preset-flow": "^7.0.0-beta.51",
+    "babel-loader": "^8.0.0-beta",
+    "chalk": "^2.4.1",
+    "html-webpack-plugin": "^3.2.0",
+    "koa": "^2.5.1",
+    "koa-static": "^5.0.0",
+    "webpack": "^4.13.0"
+  },
+  "devDependencies": {
+    "babel-eslint": "^8.2.5",
+    "eslint": "^5.0.1",
+    "eslint-plugin-flowtype": "^2.49.3",
+    "flow-bin": "^0.75.0",
+    "koa-websocket": "^5.0.1",
+    "webpack-cli": "^3.0.8"
+  },
+  "scripts": {
+    "lint": "eslint src",
+    "typecheck": "flow src",
+    "build": "node src/build",
+    "start": "node build/server/index"
+  }
+}
