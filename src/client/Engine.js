@@ -142,7 +142,7 @@ export class Engine {
   renderFrame() {
     const cursorColumn = (this._cursorIsActive) ? this._cursorColumn() : null;
     const drop = this._ongoingDrop();
-    this._renderer.render(this._game, this._ourPlayer, cursorColumn, drop);
+    this._renderer.render(this._ourNickname, this._ourScore, this._opponentNickname, this._opponentScore, this._game, this._ourPlayer, cursorColumn, drop);
   }
 
   get _cursorIsActive(): boolean {

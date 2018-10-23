@@ -31,7 +31,8 @@ const colors = {
   theirPieceOuter:   '#00bbee',
   theirPieceInner:   '#0099cc',
   winningPieceOuter: '#ffef00',
-  winningPieceInner: '#efdf00'
+  winningPieceInner: '#efdf00',
+  text:              '#ffffe0'
 };
 
 const aspectRatio = 1.42;
@@ -50,12 +51,17 @@ const scale = (() => {
   const boardWidth = gridColumns * cellSize + 2 * boardPadding;
   const boardHeight = gridRows * cellSize + 2 * boardPadding;
   const boardLeft = (width - boardWidth) / 2;
+  const boardRight = boardLeft + boardWidth;
   const boardTop = 1.2 * cellSize;
 
   const cursorY = 0.05;
   const dropSpeed = 0.001;
 
   const columnBias = 0.75 * cellSize;
+
+  const displayPadding = 0.02;
+  const displayPieceRadius = 0.02;
+  const displayText = 0.025;
 
   return {
     width,
@@ -68,10 +74,14 @@ const scale = (() => {
     boardWidth,
     boardHeight,
     boardLeft,
+    boardRight,
     boardTop,
     cursorY,
     dropSpeed,
-    columnBias
+    columnBias,
+    displayPadding,
+    displayPieceRadius,
+    displayText
   };
 })();
 
@@ -141,7 +151,7 @@ export class Renderer {
     return (rowY[row] - scale.cursorY) / scale.dropSpeed;
   }
 
-  render(game: Game, ourPlayer: Player, cursorColumn: number | null, drop: Drop | null) {
+  render(nickname: string, score: number, opponentNickname: string, opponentScore: number, game: Game, ourPlayer: Player, cursorColumn: number | null, drop: Drop | null) {
     assert(cursorColumn === null || drop === null);
     this._clearAndTransform();
 
@@ -150,6 +160,8 @@ export class Renderer {
     }
 
     this._drawBoard(game, ourPlayer, drop);
+
+    this._drawDisplay(nickname, score, opponentNickname, opponentScore, game, ourPlayer);
   }
 
   _clearAndTransform() {
@@ -272,7 +284,38 @@ export class Renderer {
     this._drawPiece(columnX[column], scale.cursorY, true, false, scale.cellRadius);
   }
 
-  _drawDisplay() {
+  _drawDisplay(nickname: string, score: number, opponentNickname: string, opponentScore: number, game: Game, ourPlayer: Player) {
+    const ctx = this._context;
+
+    const y = scale.boardTop + scale.boardHeight + scale.displayPadding + scale.displayPieceRadius;
+
+    const ourPieceX = scale.boardLeft + scale.displayPadding + scale.displayPieceRadius;
+    const opponentPieceX = scale.boardRight - scale.displayPadding - scale.displayPieceRadius;
+
+    const ourTextX = ourPieceX + scale.displayPieceRadius + scale.displayPadding;
+    const opponentTextX = opponentPieceX - scale.displayPieceRadius - scale.displayPadding;
+
+    const ourWin = game.isWon && game.winner == ourPlayer;
+    const opponentWin = game.isWon && !ourWin;
+
+    const ourTurn = !game.isWon && !game.isDrawn && game.nextPlayer === ourPlayer;
+    const opponentTurn = !game.isWon && !game.isDrawn && !ourTurn;
+
+    const ourText = `${nickname} (${score})` + (ourTurn ? ' ◀' : '');
+    const opponentText = (opponentTurn ? '▶ ' : '') + `${opponentNickname} (${opponentScore})`;
+
+    this._drawPiece(ourPieceX, y, true, ourWin, scale.displayPieceRadius);
+    this._drawPiece(opponentPieceX, y, false, opponentWin, scale.displayPieceRadius);
+
+    ctx.fillStyle = colors.text;
+    ctx.font = `${scale.displayText}px sans-serif`;
+    ctx.textBaseline = 'bottom';
+
+    ctx.textAlign = 'left';
+    ctx.fillText(ourText, ourTextX, y + 0.6 * scale.displayPieceRadius);
+
+    ctx.textAlign = 'right';
+    ctx.fillText(opponentText, opponentTextX, y + 0.6 * scale.displayPieceRadius);
   }
 
   _computeExtents(): Extents {

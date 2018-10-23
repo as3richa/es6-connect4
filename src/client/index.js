@@ -40,6 +40,10 @@ window.addEventListener('load', () => {
       return;
     }
 
+    if(typeof(data['nickname']) === 'string') {
+      engine.setNickname(data.nickname);
+    }
+
     if(state === 'playing') {
       enableKeyHandlers();
       hideOverlay();
