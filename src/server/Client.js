@@ -47,6 +47,11 @@ export class Client {
       return;
     }
 
+    if(clientsByNickname[nickname.toLowerCase()]) {
+      this._send({ message: `The nickname ${nickname} is already taken`});
+      return;
+    }
+
     this._state = 'idle';
     this._nickname = nickname;
 
@@ -108,8 +113,8 @@ export class Client {
     this._send({ opponent: this._opponent._nickname, player: this._myPlayer });
 
     this._opponent._state = 'playing';
-    this._myGame = game;
-    this._myPlayer = playerTwo;
+    this._opponent._myGame = game;
+    this._opponent._myPlayer = playerTwo;
     this._opponent._send({ opponent: this._nickname, player: this._opponent._myPlayer });
 
     logger.info(`${this._nickname} has accepted ${this._opponent._nickname}'s challenge`);
@@ -168,8 +173,7 @@ export class Client {
     }
 
     game.play(player, column);
-    this._send({ drop: true, yours: true, column });
-    this._opponent._send({ drop: true, yours: false, column });
+    this._opponent._send({ drop: true, column });
 
     logger.info(`${this._nickname} has made a play in their game versus ${this._opponent._nickname}`);
 
@@ -177,6 +181,7 @@ export class Client {
       const swap = this._player;
       this._myPlayer = this._opponent._player;
       this._opponent._myPlayer = swap;
+      this._myGame = this._opponent._myGame = new Game();
     }
   }
 

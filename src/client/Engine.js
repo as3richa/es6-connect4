@@ -29,7 +29,9 @@ export class Engine {
 
   _resetTimeoutId: TimeoutID | null;
 
-  constructor(canvas: HTMLCanvasElement) {
+  _onDropOurPiece: (column: number) => void
+
+  constructor(canvas: HTMLCanvasElement, onDropOurPiece: (column: number) => void) {
     this._renderer = new Renderer(canvas);
 
     this._ourPlayer = playerOne;
@@ -46,6 +48,8 @@ export class Engine {
     this._memoizedCursorColumn = null;
 
     this._resetTimeoutId = null;
+
+    this._onDropOurPiece = onDropOurPiece;
   }
 
   setNickname(nickname: string) {
@@ -119,6 +123,7 @@ export class Engine {
 
     if(this._drop(true, column)) {
       this._memoizedCursorColumn = null;
+      this._onDropOurPiece(column);
       return true;
     }
 
@@ -210,6 +215,10 @@ export class Engine {
         this._opponentScore ++;
       }
     }
+
+    const swap = this._ourPlayer;
+    this._ourPlayer = this._opponentPlayer;
+    this._opponentPlayer = swap;
 
     this._game = new Game();
   }

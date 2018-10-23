@@ -3,30 +3,25 @@
 import { Engine } from './Engine';
 import { toPlayer } from '../common/Game';
 import { registerKeyHandlers, registerMouseHandlers, registerTouchHandlers, enableKeyHandlers, disableKeyHandlers } from './controls';
-import { establishConnection, onMessage, onError } from './network';
+import { establishConnection, onMessage, onError, send } from './network';
 import { toClientState } from '../common/ClientState';
+import { initUi, showOverlay, hideOverlay } from './ui';
 
 import type { ClientState } from '../common/ClientState';
 
-function showOverlay(s: ClientState, m: string) { }
-function hideOverlay() { }
-
 window.addEventListener('load', () => {
-  const documentBody = document.body;
-  const documentElement = document.documentElement;
+  const callbacks = {
+    nick: (nickname: string) => { send({ cmd: 'nick', param: nickname }); },
+    challenge: (opponentName: string) => { send({ cmd: 'challenge', param: opponentName }); },
+    accept: () => { send({ cmd: 'accept'}); },
+    decline: () => { send({ cmd: 'decline'}); },
+    cancel: () => { send({ cmd: 'cancel'}); },
+    drop: (column: number) => { send({ cmd: 'drop', param: column }); }
+  };
 
-  if(!documentBody || !documentElement) {
-    throw new Error('missing documentBody or documentElement');
-  }
+  const { canvas } = initUi(callbacks);
 
-  documentBody.style.margin = '0px';
-  documentBody.style.padding = '0px';
-  documentBody.style.overflow = 'hidden';
-
-  const canvas = document.createElement('canvas');
-  documentBody.appendChild(canvas);
-
-  const engine = new Engine(canvas);
+  const engine = new Engine(canvas, callbacks.drop);
 
   const renderFrame = () => {
     engine.renderFrame();
@@ -34,45 +29,39 @@ window.addEventListener('load', () => {
   };
   renderFrame();
 
-  const resizeCanvas = () => {
-    canvas.width = documentElement.clientWidth;
-    canvas.height = documentElement.clientHeight;
-  };
-
-  window.addEventListener('resize', resizeCanvas);
-  resizeCanvas();
-
   registerKeyHandlers(engine);
   registerMouseHandlers(canvas, engine);
   registerTouchHandlers(canvas, engine);
 
-  establishConnection();
-
-  onMessage((data: mixed) => {
+  onMessage((data: Object) => {
     const state: ClientState | null = toClientState(data.state);
 
     if(state === null) {
       return;
-    } else if(state === 'playing') {
-      enableKeyHandlers();
+    }
 
-      if(data.drop && typeof(data.column) === 'number') {
-        if(data.yours) {
-          engine.moveCursorTo(data.column);
-          engine.dropOurPiece();
-        } else {
-          engine.dropOpponentPiece(data.column);
-        }
-      } else if(typeof(data.opponent) === 'string' && toPlayer(data.player) !== null) {
-        hideOverlay();
-        engine.newSession(data.opponent, toPlayer(data.player));
+    if(state === 'playing') {
+      enableKeyHandlers();
+      hideOverlay();
+
+      if(data['drop'] && typeof(data['column']) === 'number') {
+        engine.dropOpponentPiece(data.column);
+      } else if(typeof(data['opponent']) === 'string') {
+        const player = toPlayer(data['player']);
+        if(player !== null) {
+          engine.newSession(data.opponent, player);
+        } 
       }
     } else {
-      const message = (typeof(data.message) === 'string') ? data.message : '';
+      const message = (typeof(data['message']) === 'string') ? data.message : '';
       disableKeyHandlers();
       showOverlay(state, message);
     }
   });
 
-  onError(() => {});
+  onError(() => {
+    showOverlay('error', 'Something went wrong - please refresh the page.');
+  });
+
+  establishConnection();
 });
