@@ -20,7 +20,12 @@ app.ws.use((ctx) => {
 
   logger.info('client connected via websocket interface');
 
+  let clientConnected: boolean = true;
+
   const client = new Client((message: mixed) => {
+    if(!clientConnected) {
+      return;
+    }
     ws.send(JSON.stringify(message));
   });
 
@@ -79,6 +84,7 @@ app.ws.use((ctx) => {
 
   const onClose = () => {
     logger.info('client disconnected');
+    clientConnected = false;
     client.quit();
   };
 

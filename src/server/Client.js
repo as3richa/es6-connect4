@@ -196,11 +196,11 @@ export class Client {
     opponent._myOpponent = null;
     opponent._send({ message: `${this._nickname} has left the lobby`});
 
-    logger.info(`${this._nickname} has left their game versus ${this._opponent._nickname}`);
+    logger.info(`${this._nickname} has left their game versus ${opponent._nickname}`);
   }
 
   quit() {
-    if(this._state !== 'idle') {
+    if(this._state !== 'unnamed') {
       const deleted = delete clientsByNickname[this._nickname.toLowerCase()];
       assert(deleted);
     }
