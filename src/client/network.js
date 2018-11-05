@@ -5,7 +5,7 @@ const errorCallbacks: Array<() => void> = [];
 let sock: WebSocket | null = null;
 
 export function establishConnection() {
-  const proto = (window.location.protocol === 'https') ? 'wss' : 'ws';
+  const proto = (window.location.protocol === 'https:') ? 'wss' : 'ws';
   const url = `${proto}://${window.location.hostname}:${window.location.port}`;
 
   sock = new WebSocket(url);
