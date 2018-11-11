@@ -152,7 +152,7 @@ export class Game {
 
       for(let r = 0; r < gridRows; r ++) {
         for(let c = 0; c < gridColumns; c ++) {
-          if(this._playerOneGrid[r][c] || this._playerTwoGrid[r][c]) {
+          if(!(this._playerOneGrid[r][c] || this._playerTwoGrid[r][c])) {
             this._drawn = false;
             break;
           }
